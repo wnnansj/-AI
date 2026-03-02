@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>衡水助学AI - 公益辅助平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            padding: 0 20px;
+            /* 页面左右留边，避免贴边 */
+        }
+
+        /* 顶部导航 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 40px;
+            /* 和卡片区拉开距离 */
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #0284c7;
+        }
+
+        .logo-tag {
+            font-size: 12px;
+            color: #64748b;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+
+        .nav a {
+            margin-left: 25px;
+            text-decoration: none;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .nav a:hover {
+            color: #0284c7;
+        }
+
+        /* 核心：卡片网格布局（强制2行2列） */
+        .card-wrapper {
+            max-width: 1200px;
+            /* 限制最大宽度，避免卡片太宽 */
+            margin: 0 auto;
+            /* 页面居中 */
+            display: grid;
+            /* 关键：电脑端固定2列，每列宽度相等，列间距30px，行间距30px */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            /* 卡片之间的间距（列+行） */
+        }
+
+        /* 卡片样式统一 */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            /* 轻微阴影，更立体 */
+            /* 强制卡片高度一致，避免内容多少导致高度不一 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+            /* 图标背景圈 */
+            background: #f0f9ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #0284c7;
+        }
+
+        .card h3 {
+            font-size: 18px;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .card a {
+            text-decoration: none;
+            color: #0284c7;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .card a:hover {
+            color: #0369a1;
+        }
+
+        /* 手机端适配：变成1列 */
+        @media (max-width: 768px) {
+            .card-wrapper {
+                grid-template-columns: 1fr;
+                /* 手机端1列 */
+            }
+
+            .header {
+                flex-direction: column;
+                /* 手机端导航换行 */
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .nav a {
+                margin-left: 0;
+                margin-right: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 顶部导航 -->
+    <div class="header">
+        <div class="logo">
+            衡水助学AI <span class="logo-tag">公益辅助平台</span>
+        </div>
+        <div class="nav">
+            <a href="index.html">首页</a>
+            <a href="政策解答.html">政策解答</a>
+            <a href="作文批改.html">作文批改</a>
+            <a href="错题分析.html">错题分析</a>
+            <a href="备考工具.html">备考工具</a>
+        </div>
+    </div>
+
+    <!-- 卡片区域（2行2列） -->
+    <div class="card-wrapper">
+        <!-- 政策智能问答 -->
+        <div class="card">
+            <div class="card-icon">📋</div>
+            <h3>政策智能问答</h3>
+            <p>涵盖专升本最新招生政策、征兵入伍条件及流程。AI实时解读，帮您快速找到关键信息，不再迷茫。</p>
+            <a href="政策解答.html">去提问 →</a>
+        </div>
+
+        <!-- AI作文批改 -->
+        <div class="card">
+            <div class="card-icon">✏️</div>
+            <h3>AI作文批改</h3>
+            <p>上传您的英语或语文作文，秒级获取评分、语法纠错及润色建议。针对专升本考试标准深度优化。</p>
+            <a href="作文批改.html">去批改 →</a>
+        </div>
+
+        <!-- 错题深度分析 -->
+        <div class="card">
+            <div class="card-icon">📚</div>
+            <h3>错题深度分析</h3>
+            <p>拍照或输入错题，AI解析解题思路，归纳知识点漏洞，并推荐相似题目进行针对性强化训练。</p>
+            <a href="错题分析.html">去分析 →</a>
+        </div>
+
+        <!-- 征兵/升本备考工具 -->
+        <div class="card">
+            <div class="card-icon">📅</div>
+            <h3>征兵/升本备考工具</h3>
+            <p>征兵报名倒计时、升本备考日历、退伍补贴测算，一站式辅助衡水专科生备考/征兵规划。</p>
+            <a href="备考工具.html">去使用 →</a>
+        </div>
+    </div>
+</body>
+<!-- 升级版页脚代码 -->
+<footer
+    style="background-color: #f1f5f9; padding: 50px 20px 20px; border-top: 1px solid #e2e8f0; font-family: 'PingFang SC', sans-serif;">
+    <div
+        style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 40px;">
+
+        <!-- 模块 1: 品牌与私域引流 (最重要) -->
+        <div>
+            <h3 style="font-size: 18px; font-weight: bold; color: #0066cc; margin-bottom: 15px;">衡水助学AI</h3>
+            <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+                专注衡水本地专科生<br>专升本 / 征兵 / 学习一站式辅助
+            </p>
+            <div
+                style="background: white; padding: 10px; border-radius: 8px; display: inline-block; text-align: center; border: 1px dashed #cbd5e1;">
+                <!-- 这里替换成你的微信群或个人微信二维码图片 -->
+                <img src="https://via.placeholder.com/100x100?text=QR+Code" alt="交流群二维码"
+                    style="width: 100px; height: 100px; display: block; margin: 0 auto;">
+                <p style="font-size: 12px; color: #0066cc; font-weight: bold; margin-top: 5px;">扫码加入备考群</p>
+                <p style="font-size: 11px; color: #94a3b8;">领资料 · 问政策 · 找研友</p>
+            </div>
+        </div>
+
+        <!-- 模块 2: 快速导航 -->
+        <div>
+            <h3 style="font-size: 16px; font-weight: bold; color: #1e293b; margin-bottom: 15px;">核心功能</h3>
+            <ul style="list-style: none; padding: 0; line-height: 2;">
+                <li><a href="index.html" style="color: #64748b; text-decoration: none; font-size: 14px;">🏠 网站首页</a>
+                </li>
+                <li><a href="chat.html" style="color: #64748b; text-decoration: none; font-size: 14px;">💬 政策智能问答</a>
+                </li>
+                <li><a href="essay.html" style="color: #64748b; text-decoration: none; font-size: 14px;">✍️ AI 作文批改</a>
+                </li>
+                <li><a href="mistake.html" style="color: #64748b; text-decoration: none; font-size: 14px;">📊 错题深度分析</a>
+                </li>
+                <li><a href="tools.html" style="color: #64748b; text-decoration: none; font-size: 14px;">🛠️ 备考工具箱</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 模块 3: 官方链接 (提升信任度) -->
+        <div>
+            <h3 style="font-size: 16px; font-weight: bold; color: #1e293b; margin-bottom: 15px;">官方信息源</h3>
+            <ul style="list-style: none; padding: 0; line-height: 2;">
+                <li><a href="https://www.hebeea.edu.cn/" target="_blank"
+                        style="color: #64748b; text-decoration: none; font-size: 14px;">🔗 河北省教育考试院</a></li>
+                <li><a href="https://www.gfbzb.gov.cn/" target="_blank"
+                        style="color: #64748b; text-decoration: none; font-size: 14px;">🔗 全国征兵网</a></li>
+                <li><a href="#" style="color: #64748b; text-decoration: none; font-size: 14px;">📄 本站隐私政策</a></li>
+                <li><a href="#" style="color: #64748b; text-decoration: none; font-size: 14px;">📄 免责声明</a></li>
+            </ul>
+        </div>
+
+        <!-- 模块 4: 更新与联系 -->
+        <div>
+            <h3 style="font-size: 16px; font-weight: bold; color: #1e293b; margin-bottom: 15px;">联系我们</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">📧 合作/反馈：contact@hs-ai-edu.com</p>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">📅 数据更新至：2026年3月2日</p>
+            <div style="margin-top: 20px;">
+                <span
+                    style="display: inline-block; background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">公益项目</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部版权与备案 -->
+    <div
+        style="max-width: 1200px; margin: 0 auto; border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center;">
+        <p style="color: #94a3b8; font-size: 13px; margin-bottom: 8px;">
+            &copy; 2026 衡水助学AI 版权所有。本网站为公益性质学习辅助平台，不收取任何费用。
+        </p>
+        <p style="color: #94a3b8; font-size: 12px; line-height: 1.6;">
+            免责声明：本站所有内容（含AI生成结果）仅供参考，不构成任何报考或入伍建议。<br>
+            具体政策、报名时间、录取标准请以<strong>河北省教育考试院</strong>及<strong>当地征兵办公室</strong>发布的官方文件为准。
+        </p>
+        <!-- 如果有备案号，放在这里 -->
+        <!-- <p style="color: #94a3b8; font-size: 12px; margin-top: 8px;">冀ICP备XXXXXXXX号</p> -->
+    </div>
+</footer>
+
+</html>

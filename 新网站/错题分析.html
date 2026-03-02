@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错题智能分析 - 衡水助学AI</title>
+    <style>
+        /* ==================== 全局样式 (复用) ==================== */
+        :root {
+            --primary-color: #0066cc;
+            --bg-color: #f9fbfd;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --tag-bg: #e0f2fe;
+            --tag-text: #0369a1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        /* 上传区域 */
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 40px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            background: #f8fafc;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        #file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* 预览图 */
+        #preview-img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 按钮 */
+        .analyze-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            display: none;
+            /* 初始隐藏 */
+        }
+
+        .analyze-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* 步骤条 */
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: 0;
+        }
+
+        .step {
+            position: relative;
+            z-index: 1;
+            background: var(--bg-color);
+            padding: 0 10px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .step-dot {
+            width: 30px;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .step.active {
+            color: var(--primary-color);
+        }
+
+        .step.active .step-dot {
+            background: var(--primary-color);
+        }
+
+        .step.completed {
+            color: var(--primary-color);
+        }
+
+        .step.completed .step-dot {
+            background: var(--success-color);
+            content: '✓';
+        }
+
+        /* 结果详情 */
+        .result-box {
+            text-align: left;
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tag {
+            display: inline-block;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .analysis-section {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 15px;
+        }
+
+        .analysis-section:last-child {
+            border: none;
+        }
+
+        .section-label {
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .ocr-text {
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #333;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .recommend-item {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 5px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rec-btn {
+            color: var(--primary-color);
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 加载动画覆盖层 */
+        .processing-overlay {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn">← 返回首页</a>
+        <div class="page-title">错题深度分析</div>
+        <div style="width: 60px;"></div>
+    </header>
+
+    <div class="container">
+        <!-- 1. 上传卡片 -->
+        <div class="card">
+            <h3 style="margin-bottom: 20px;">📷 上传错题照片</h3>
+
+            <div class="upload-area" id="drop-zone">
+                <input type="file" id="file-input" accept="image/*">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击或拖拽上传图片</div>
+                <div class="upload-hint">支持 JPG, PNG 格式，大小不超过 5MB</div>
+                <img id="preview-img" alt="预览">
+            </div>
+
+            <button id="analyze-btn" class="analyze-btn">开始智能分析</button>
+        </div>
+
+        <!-- 2. 处理流程与结果卡片 -->
+        <div class="card" id="result-card" style="display: none;">
+            <!-- 步骤条 -->
+            <div class="steps">
+                <div class="step active" id="step1">
+                    <div class="step-dot">1</div>
+                    <span>图像识别</span>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-dot">2</div>
+                    <span>知识点定位</span>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-dot">3</div>
+                    <span>推荐习题</span>
+                </div>
+            </div>
+
+            <!-- 进度条模拟 -->
+            <div id="processing-ui" class="processing-overlay">
+                <p id="process-text">正在 OCR 识别题目...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- 最终结果 -->
+            <div id="final-result" class="result-box">
+                <div class="tag" id="knowledge-tag">知识点：待定</div>
+
+                <div class="analysis-section">
+                    <span class="section-label">📝 识别出的题目：</span>
+                    <div class="ocr-text" id="ocr-content">加载中...</div>
+                </div>
+
+                <div class="analysis-section">
+                    <span class="section-label">💡 解题思路点拨：</span>
+                    <p style="font-size: 14px; line-height: 1.6; color: #475569;" id="solution-hint">
+                        加载中...
+                    </p>
+                </div>
+
+                <div class="analysis-section">
+                    <span class="section-label">🎯 举一反三 (推荐练习)：</span>
+                    <div id="recommend-list">
+                        <!-- 动态插入 -->
+                    </div>
+                </div>
+
+                <button onclick="location.reload()"
+                    style="background:none; border:1px solid #cbd5e1; padding: 8px 20px; border-radius: 4px; cursor: pointer; color: #64748b; margin-top: 10px;">再拍一题</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const previewImg = document.getElementById('preview-img');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const resultCard = document.getElementById('result-card');
+        const processingUi = document.getElementById('processing-ui');
+        const progressFill = document.getElementById('progress-fill');
+        const processText = document.getElementById('process-text');
+        const finalResult = document.getElementById('final-result');
+
+        // 步骤 DOM
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+
+        // 模拟题库数据
+        const mockDatabase = [
+            {
+                keywords: ["函数", "单调性", "f(x)"],
+                knowledge: "高中数学 · 函数单调性",
+                ocr: "已知函数 f(x) = x² - 2ax + 3 在区间 (-∞, 2] 上单调递减，求实数 a 的取值范围。",
+                hint: "1. 这是一个二次函数，开口向上。<br>2. 对称轴为 x = a。<br>3. 要使函数在 (-∞, 2] 递减，区间必须在对称轴左侧，即 2 ≤ a。",
+                rec: ["求函数 y = -x² + 4x 的单调递增区间", "若 f(x) = ax² + bx 在 [1, +∞) 递增，求 a 范围"]
+            },
+            {
+                keywords: ["英语", "grammar", "choose"],
+                knowledge: "高中英语 · 定语从句",
+                ocr: "This is the factory ______ we visited last year. (A. where B. which C. who)",
+                hint: "1. 先行词是 factory (物)。<br>2. 从句中 visited 缺少宾语。<br>3. 因此选用关系代词 which/that，而不是关系副词 where。",
+                rec: ["Is this the museum ______ you worked? (where/which)", "The boy ______ is playing football is my brother."]
+            },
+            {
+                // 默认兜底数据
+                keywords: [],
+                knowledge: "通用学科 · 综合推理",
+                ocr: "[模拟识别] 题目图片内容提取中... (此处为模拟文本，实际需对接 OCR)",
+                hint: "由于图片清晰度或题型复杂，AI 建议：先梳理已知条件，画图辅助理解，再尝试代入特殊值验证。",
+                rec: ["同类题型强化训练 A 组", "易错点专项突破 B 组"]
+            }
+        ];
+
+        // 1. 图片预览
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    analyzeBtn.style.display = 'block';
+                    // 隐藏提示文字，让布局更紧凑
+                    document.querySelector('.upload-text').style.display = 'none';
+                    document.querySelector('.upload-hint').style.display = 'none';
+                    document.querySelector('.upload-icon').style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 2. 开始分析流程
+        analyzeBtn.addEventListener('click', () => {
+            // 滚动到结果区
+            resultCard.style.display = 'block';
+            resultCard.scrollIntoView({ behavior: 'smooth' });
+
+            // 隐藏按钮防止重复点击
+            analyzeBtn.style.display = 'none';
+            processingUi.style.display = 'block';
+            finalResult.style.display = 'none';
+
+            runSimulation();
+        });
+
+        // 3. 模拟全流程
+        function runSimulation() {
+            let progress = 0;
+
+            // 阶段 1: OCR 识别 (0-40%)
+            const timer1 = setInterval(() => {
+                progress += 5;
+                progressFill.style.width = progress + '%';
+                if (progress >= 40) {
+                    clearInterval(timer1);
+                    updateStep(1, true);
+                    processText.innerText = "正在匹配知识点...";
+
+                    // 阶段 2: 知识点分析 (40-70%)
+                    const timer2 = setInterval(() => {
+                        progress += 5;
+                        progressFill.style.width = progress + '%';
+                        if (progress >= 70) {
+                            clearInterval(timer2);
+                            updateStep(2, true);
+                            processText.innerText = "正在生成推荐习题...";
+
+                            // 阶段 3: 生成结果 (70-100%)
+                            const timer3 = setInterval(() => {
+                                progress += 5;
+                                progressFill.style.width = progress + '%';
+                                if (progress >= 100) {
+                                    clearInterval(timer3);
+                                    updateStep(3, true);
+                                    showFinalResult();
+                                }
+                            }, 100);
+                        }
+                    }, 100);
+                }
+            }, 100);
+        }
+
+        function updateStep(stepNum, completed) {
+            const stepEl = document.getElementById(`step${stepNum}`);
+            stepEl.classList.add('completed');
+            stepEl.querySelector('.step-dot').innerText = '✓';
+            if (stepNum < 3) {
+                document.getElementById(`step${stepNum + 1}`).classList.add('active');
+            }
+        }
+
+        function showFinalResult() {
+            processingUi.style.display = 'none';
+            finalResult.style.display = 'block';
+
+            // 模拟根据文件名或随机选择数据
+            // 这里简单随机选一个，实际可根据图片特征判断
+            const randomData = mockDatabase[Math.floor(Math.random() * mockDatabase.length)];
+
+            // 填充数据
+            document.getElementById('knowledge-tag').innerText = "🏷️ " + randomData.knowledge;
+            document.getElementById('ocr-content').innerText = randomData.ocr;
+            document.getElementById('solution-hint').innerHTML = randomData.hint;
+
+            const recList = document.getElementById('recommend-list');
+            recList.innerHTML = randomData.rec.map((item, index) => `
+                <div class="recommend-item">
+                    <span>${index + 1}. ${item}</span>
+                    <span class="rec-btn">查看解析 →</span>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+
+</html>
