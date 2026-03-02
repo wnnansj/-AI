@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能问答 - 衡水助学AI</title>
+    <style>
+        /* ==================== 全局样式 (与首页保持一致) ==================== */
+        :root {
+            --primary-color: #0066cc;
+            --primary-hover: #0052a3;
+            --bg-color: #f9fbfd;
+            --chat-bg-user: #e0f2fe;
+            /* 用户气泡背景：浅蓝 */
+            --chat-bg-ai: #ffffff;
+            /* AI气泡背景：白色 */
+            --text-color: #333;
+            --gray-text: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==================== 顶部导航 (简化版) ==================== */
+        header {
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn::before {
+            content: '←';
+            margin-right: 5px;
+            font-size: 18px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        /* ==================== 聊天区域 ==================== */
+        #chat-container {
+            flex: 1;
+            /* 占据剩余空间 */
+            overflow-y: auto;
+            /* 允许滚动 */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            scroll-behavior: smooth;
+        }
+
+        /* 消息气泡通用样式 */
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            font-size: 15px;
+            position: relative;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 用户消息样式 */
+        .message.user {
+            align-self: flex-end;
+            /* 靠右 */
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        /* AI 消息样式 */
+        .message.ai {
+            align-self: flex-start;
+            /* 靠左 */
+            background-color: var(--chat-bg-ai);
+            color: var(--text-color);
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 2px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 加载动画 (三个点) */
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+            padding: 10px 15px;
+            background: var(--chat-bg-ai);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            width: fit-content;
+            margin-bottom: 20px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #cbd5e1;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* ==================== 底部输入区 ==================== */
+        .input-area {
+            background: white;
+            padding: 15px 20px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #user-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        #send-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+
+        #send-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        #send-btn:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        /* 手机端适配微调 */
+        @media (max-width: 600px) {
+            .message {
+                max-width: 85%;
+            }
+
+            #user-input {
+                font-size: 16px;
+                /* 防止iOS缩放 */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 顶部导航 -->
+    <header>
+        <a href="index.html" class="back-btn">返回首页</a>
+        <div class="page-title">政策/学习问答</div>
+        <div style="width: 60px;"></div> <!-- 占位保持标题居中 -->
+    </header>
+
+    <!-- 聊天记录显示区 -->
+    <div id="chat-container">
+        <!-- 欢迎语 -->
+        <div class="message ai">
+            你好！我是衡水助学AI助手。👋<br>
+            我可以为您解答<strong>专升本政策</strong>、<strong>征兵流程</strong>或<strong>学习问题</strong>。<br>
+            试着问我：“退役士兵专升本需要什么材料？”
+        </div>
+    </div>
+
+    <!-- 底部输入框 -->
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="请输入您的问题..." autocomplete="off">
+        <button id="send-btn">发送</button>
+    </div>
+
+    <script>
+        // ==================== 1. 预设问答库 (本地模拟数据) ====================
+        // 格式：keywords 是触发关键词数组，answer 是回复内容
+        const knowledgeBase = [
+            {
+                keywords: ["退役", "退伍", "士兵", "军人"],
+                answer: "🎓 <strong>退役士兵专升本政策：</strong><br>1. <strong>资格：</strong>高职（专科）毕业生及在校生（含高校新生）应征入伍，退役后完成高职学业的可免试攻读普通本科。<br>2. <strong>材料：</strong>通常需要身份证、专科毕业证、退出现役证、立功受奖证书（如有）。<br>3. <strong>流程：</strong>一般在每年3月左右报名，具体请关注河北省教育考试院公告。"
+            },
+            {
+                keywords: ["材料", "证件", "准备"],
+                answer: "📂 <strong>通用报名材料清单：</strong><br>1. 本人二代居民身份证。<br>2. 专科毕业证书（应届生提供学籍证明）。<br>3. 电子照片（近期免冠）。<br>4. 特殊类别考生（如退役士兵、获奖选手）需提供相应证明材料原件扫描件。<br><em>注：具体以当年官方文件为准。</em>"
+            },
+            {
+                keywords: ["时间", "什么时候", "日期"],
+                answer: "⏰ <strong>关键时间节点参考：</strong><br>• <strong>报名：</strong>通常在每年3月中下旬。<br>• <strong>考试：</strong>通常在每年4月或5月。<br>• <strong>录取：</strong>6月左右。<br>建议您设置提醒，密切关注“河北省教育考试院”官网。"
+            },
+            {
+                keywords: ["作文", "批改", "英语", "语文"],
+                answer: "✍️ <strong>关于作文批改：</strong><br>目前本对话框主要用于政策问答。如需<strong>作文批改</strong>功能，请点击首页的“作文批改”卡片，那里有专门的界面供您上传文章并获得详细评分和修改建议！"
+            },
+            {
+                keywords: ["错题", "分析", "题目"],
+                answer: "📊 <strong>关于错题分析：</strong><br>本对话框主要回答文本类问题。如需<strong>拍照搜题或错题分析</strong>，请返回首页点击“错题分析”功能模块，那里支持图片上传和深度解析。"
+            }
+        ];
+
+        const defaultAnswer = "🤔 这个问题我还需要学习一下。目前我主要擅长<strong>专升本政策</strong>和<strong>征兵流程</strong>相关的问答。<br>您可以试试问我：“退役士兵怎么报名？”或者“需要带什么证件？”";
+
+        // ==================== 2. DOM 元素获取 ====================
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // ==================== 3. 核心功能函数 ====================
+
+        // 添加消息到界面
+        function addMessage(text, sender) {
+            const div = document.createElement('div');
+            div.classList.add('message', sender);
+            // 允许 HTML 标签渲染 (如 <strong>, <br>)
+            div.innerHTML = text;
+            chatContainer.appendChild(div);
+            scrollToBottom();
+        }
+
+        // 滚动到底部
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 显示“正在输入”动画
+        function showTyping() {
+            const div = document.createElement('div');
+            div.id = 'typing-indicator';
+            div.classList.add('typing-indicator');
+            div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+            chatContainer.appendChild(div);
+            scrollToBottom();
+            return div;
+        }
+
+        // 移除“正在输入”动画
+        function removeTyping(indicator) {
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // 模拟 AI 思考并回复 (核心逻辑)
+        function getAIResponse(question) {
+            // 将问题转为小写以便匹配
+            const q = question.toLowerCase();
+
+            // 遍历知识库查找匹配
+            for (let item of knowledgeBase) {
+                // 如果问题中包含任何一个关键词
+                if (item.keywords.some(keyword => q.includes(keyword))) {
+                    return item.answer;
+                }
+            }
+            // 没找到匹配则返回默认回答
+            return defaultAnswer;
+        }
+
+        // 处理发送逻辑
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // 1. 禁用按钮，防止重复点击
+            userInput.value = '';
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+
+            // 2. 显示用户消息
+            addMessage(text, 'user');
+
+            // 3. 显示加载动画
+            const loadingIndicator = showTyping();
+
+            // 4. 模拟网络延迟 (1秒 - 1.5秒)
+            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 500));
+
+            // 5. 获取答案
+            // ============================================================
+            // TODO: 【未来对接 API 的地方】
+            // 在这里替换上面的 getAIResponse(text) 逻辑
+            // 例如:
+            // const response = await fetch('YOUR_API_URL', { method: 'POST', body: JSON.stringify({question: text}) });
+            // const data = await response.json();
+            // const aiText = data.answer;
+            // ============================================================
+            const aiText = getAIResponse(text);
+
+            // 6. 移除动画，显示 AI 消息
+            removeTyping(loadingIndicator);
+            addMessage(aiText, 'ai');
+
+            // 7. 恢复输入状态
+            userInput.disabled = false;
+            sendBtn.disabled = false;
+            userInput.focus();
+        }
+
+        // ==================== 4. 事件监听 ====================
+
+        // 点击按钮发送
+        sendBtn.addEventListener('click', handleSend);
+
+        // 回车键发送
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSend();
+            }
+        });
+
+    </script>
+</body>
+
+</html>
